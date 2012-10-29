@@ -32,6 +32,11 @@ class TestEcpg(unittest.TestCase):
         expected = 'line 1: ERROR: unrecognized data type name "garbage"'
         self.assertEqual(expected, ecpg.parse_error(error))
 
+    def test_parse_error_comments(self):
+        error = '/tmp/tmpLBKZo5.pgc:5: ERROR: syntax error at or near "//"'
+        expected = 'line 5: ERROR: syntax error at or near "--"'
+        self.assertEqual(expected, ecpg.parse_error(error))
+
 def write_out(f, text):
     f.write(text)
     f.flush()

@@ -17,4 +17,6 @@ def check_syntax(filename):
             return (False, parse_error(err))
 
 def parse_error(error):
-    return re.sub(r'^[^:]+:', "line ", error, count=1).strip()
+    error = re.sub(r'^[^:]+:', 'line ', error, count=1)
+    error = re.sub(r'\/\/', '--', error)
+    return error.strip()

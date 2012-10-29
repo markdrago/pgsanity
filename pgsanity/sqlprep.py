@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import re
 
 def get_clean_sql(sql):

@@ -1,6 +1,6 @@
 import unittest
 
-import sqlprep
+from pgsanity import sqlprep
 
 class TestSqlPrep(unittest.TestCase):
     def test_handles_first_column_comment(self):

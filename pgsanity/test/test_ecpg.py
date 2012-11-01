@@ -2,7 +2,7 @@ import unittest
 import tempfile
 import os
 
-import ecpg
+from pgsanity import ecpg
 
 class TestEcpg(unittest.TestCase):
     def setUp(self):

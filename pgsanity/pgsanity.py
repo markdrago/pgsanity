@@ -8,11 +8,11 @@ import os
 import sqlprep
 import ecpg
 
-if __name__ == '__main__':
+def main(arguments=[]):
     #parse args
     parser = argparse.ArgumentParser(description='Check sanity of PostgreSQL SQL')
     parser.add_argument('file', nargs='?', default=None)
-    args = parser.parse_args()
+    args = parser.parse_args(args=arguments)
 
     #prep sql file for checking
     fdin = sys.stdin
@@ -27,7 +27,10 @@ if __name__ == '__main__':
 
     #report results
     if success:
-        sys.exit(0)
+        return 0
     else:
         print(msg)
-        sys.exit(1)
+        return 1
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))

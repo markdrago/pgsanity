@@ -4,16 +4,16 @@ import re
 def prep_file(fdin):
     """prepare sql in a named file, return temp filename with prepared sql"""
     sqlin = fdin.read()
-    clean_sql = get_clean_sql(sqlin)
+    clean_sql = prepare_sql(sqlin)
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pgc") as dst:
         dst.write(clean_sql)
     return dst.name
 
-def get_clean_sql(sql):
+def prepare_sql(sql):
     return handle_sql_comments(add_exec_sql_statements(sql))
 
 def handle_sql_comments(sql):
-    return re.sub(r'\-\-', '//', sql)
+    return re.sub(r'^\s*\-\-', '//', sql)
 
 def add_exec_sql_statements(sql):
     result_lines = []

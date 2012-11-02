@@ -15,7 +15,8 @@ errors of the SQL.
 
 ##Installation
 ###Dependencies
-- Python >= 2.6
+- Python >= 2.7
+    - May work with Pythons < 2.7 if you install argparse (sudo pip install argparse)
 - ecpg
     - ubuntu/debian: sudo apt-get install libecpg-dev
     - rhel/centos: sudo yum install postgresql-devel

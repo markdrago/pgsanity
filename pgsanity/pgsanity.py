@@ -8,22 +8,14 @@ import os
 import sqlprep
 import ecpg
 
-def main():
-    #parse args
-    parser = argparse.ArgumentParser(description='Check sanity of PostgreSQL SQL')
-    parser.add_argument('file', nargs='?', default=None)
-    args = parser.parse_args()
+def get_config(argv=sys.argv[1:]):
+    parser = argparse.ArgumentParser(description='Check syntax of SQL for PostgreSQL')
+    parser.add_argument('files', nargs='*', default=None)
+    return parser.parse_args(argv)
 
-    #prep sql file for checking
-    fdin = sys.stdin
-    if args.file is not None:
-        fdin = open(args.file, "r")
-    prepped_file = sqlprep.prep_file(fdin)
-    fdin.close()
-
+def check_syntax(prepped_file):
     #check syntax
     (success, msg) = ecpg.check_syntax(prepped_file)
-    os.remove(prepped_file)
 
     #report results
     if success:
@@ -31,6 +23,25 @@ def main():
     else:
         print(msg)
         return 1
+
+def main():
+    config = get_config()
+
+    if config.files is None or len(config.files) == 0:
+        #handle stdin
+        prepped_file = sqlprep.prep_file(sys.stdin)
+        result = check_syntax(prepped_file)
+        os.remove(prepped_file)
+        return result
+    else:
+        accumulator = 0
+        for filename in config.files:
+            fdin = open(filename, "r")
+            prepped_file = sqlprep.prep_file(fdin)
+            fdin.close()
+            accumulator |= check_syntax(prepped_file)
+            os.remove(prepped_file)
+        return accumulator
 
 if __name__ == '__main__':
     sys.exit(main())

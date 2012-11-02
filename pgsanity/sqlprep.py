@@ -19,7 +19,7 @@ def prepare_sql(sql):
         start_str = None
 
         #decide where we are
-        if in_statement == False and in_comment == False:
+        if not in_statement and not in_comment:
             #not currently in any block
             if start != "--" and len(contents.strip()) > 0:
                 #not starting a comment and there is contents

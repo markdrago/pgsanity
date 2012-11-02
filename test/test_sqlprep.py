@@ -5,7 +5,7 @@ from pgsanity import sqlprep
 class TestSqlPrep(unittest.TestCase):
     def test_split_sql_nothing_interesting(self):
         text = "abcd123"
-        expected = [(None, None, "abcd123"),]
+        expected = [(None, None, "abcd123")]
         self.assertEquals(expected, list(sqlprep.split_sql(text)))
 
     def test_split_sql_trailing_semicolon(self):

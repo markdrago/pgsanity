@@ -39,6 +39,7 @@ PgSanity accepts filenames as parameters and it will report SQL syntax errors wh
     1
  
 Since pgsanity can handle multiple filenames as parameters it is very comfortable to use with find & xargs.
+
     $ find -name '*.sql' | xargs pgsanity
     ./sql/bad1.sql: line 59: ERROR: syntax error at or near ";"
     ./sql/bad2.sql: line 41: ERROR: syntax error at or near "insert"
@@ -57,13 +58,17 @@ Additionally PgSanity will read SQL from stdin if it is not given any parameters
 
 ##Interpreting The Results
 The error messages pretty much come directly from ecpg.  Something I have noticed while using pgsanity is that an error message on line X is probably more indicative of the statement right above X.  For example:
+
     $ echo "select a from b\ninsert into mytable values (1, 2, 3);" | pgsanity
     line 2: ERROR: syntax error at or near "into"
+
 The real problem in that SQL is that there is no semicolon after the 'b' in the select statement.  However, the SQL can not be determined to be invalid until the word "into" is encountered in the insert statement.  When in doubt, look up to the previous statement.
 
 Another common error message that can be a little weird to interpret is illustrated here:
+
     echo "select a from b" | pgsanity 
     line 2: ERROR: syntax error at or near ""
+
 The 'at or near ""' bit is trying to say that we got to the end of the file and no semicolon was found.
 
 ##Reporting Problems

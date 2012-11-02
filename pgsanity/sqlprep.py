@@ -1,13 +1,4 @@
-import tempfile
 import re
-
-def prep_file(fdin):
-    """prepare sql in a named file, return temp filename with prepared sql"""
-    sqlin = fdin.read()
-    clean_sql = prepare_sql(sqlin)
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pgc") as dst:
-        dst.write(clean_sql)
-    return dst.name
 
 def prepare_sql(sql):
     results = ""

@@ -1,7 +1,3 @@
-- allow multiple file names to be passed on command line
 - verbose mode which prints name of file and OK
-- verbose mode which prints name of file with each error
 - informative error message when ecpg is not found
-- make code which handles files testable - move out of pgsanity.py
 - require last SQL line in file to end with ';'? might already work...
-- error message explaining that 'line X: ERROR: syntax error at or near ""' likely means missing ;

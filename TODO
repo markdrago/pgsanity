@@ -5,4 +5,3 @@
 - make code which handles files testable - move out of pgsanity.py
 - require last SQL line in file to end with ';'? might already work...
 - error message explaining that 'line X: ERROR: syntax error at or near ""' likely means missing ;
-- give installation instructions in README (sudo pip install pgsanity)

@@ -13,6 +13,33 @@ list of bare SQL in it, make that file look like a C file with
 embedded SQL, run it through ecpg and let ecpg report on the syntax
 errors of the SQL.
 
-##Dependencies
+##Installation
+###Dependencies
 - Python >= 2.6
-- ecpg (ubuntu: libecpg-dev, rhel/centos: postgresql-devel)
+- ecpg
+    - ubuntu/debian: sudo apt-get install libecpg-dev
+    - rhel/centos: sudo yum install postgresql-devel
+    - arch: sudo pacman -S postgresql-libs
+
+###Getting PgSanity
+PgSanity is available in the Python Package Index, so you can install it with either easy_install or pip.  Here's [PgSanity's page on PyPI](http://pypi.python.org/pypi/pgsanity).
+- sudo pip install pgsanity **or** sudo easy_install pgsanity
+
+##Usage
+PgSanity will accept a filename as a parameter and it will report SQL syntax errors which exist in that file.  PgSanity will exit with a status code of 0 if the syntax of the SQL looks good and a 1 if any errors were found.
+ 
+    $ pgsanity file_with_sql.sql
+ 
+Alternatively PgSanity will read SQL from stdin if it is not given any parameters.  This way it can be used interactively or by piping SQL through it.
+ 
+    $ pgsanity
+    select column1 alias2 asdf from table3
+    line 1: ERROR: syntax error at or near "asdf"
+    $ echo $?
+    1
+    $ echo "select mycol from mytable;" | pgsanity
+    $ echo $?
+    0
+
+##Reporting Problems
+If you encounter any problems with PgSanity, especially any issues where it incorrectly states that invalid SQL is valid or vice versa, please report the issue on [PgSanity's github page](http://github.com/markdrago/pgsanity).  Thanks!

@@ -10,66 +10,71 @@ def prep_file(fdin):
     return dst.name
 
 def prepare_sql(sql):
-    return handle_sql_comments(add_exec_sql_statements(sql))
+    results = ""
 
-def handle_sql_comments(sql):
-    return re.sub(r'^\s*\-\-', '//', sql)
+    in_statement = False
+    in_comment = False
+    for (start, end, contents) in split_sql(sql):
+        precontents = None
+        start_str = None
 
-def add_exec_sql_statements(sql):
-    result_lines = []
-    waiting_for_semi = False
-    for line in sql.split("\n"):
-        if not line_has_sql(line):
-            #line has no sql, just add it
-            result_lines.append(line)
-            continue
+        #decide where we are
+        if in_statement == False and in_comment == False:
+            #not currently in any block
+            if start != "--" and len(contents.strip()) > 0:
+                #not starting a comment and there is contents
+                in_statement = True
+                precontents = "EXEC SQL "
 
-        if not waiting_for_semi:
-            #line has sql, not waiting for semi, must be new statement
-            result_lines.append("EXEC SQL " + deal_with_inline_semicolons(line))
-            if not line_has_trailing_semicolon(line):
-                waiting_for_semi = True
-        else:
-            #line has sql, waiting for semi
-            if line_has_valid_semicolon(line):
-               #waiting for semi and we found one
-                waiting_for_semi = False
+        if start == "--":
+            in_comment = True
+            if not in_statement:
+                start_str = "//"
 
-                #check for multiple statements per line
-                line = deal_with_inline_semicolons(line)
-                result_lines.append(line)
-            else:
-                 #waiting for semi and this line has none, just add
-                result_lines.append(line)
-    return "\n".join(result_lines)
+        start_str = start_str or start or ""
+        precontents = precontents or ""
+        results += start_str + precontents + contents
 
-def deal_with_inline_semicolons(line):
+        if not in_comment and in_statement and end == ";":
+            in_statement = False
+
+        if in_comment and end == "\n":
+            in_comment = False
+
+    return results
+
+def split_sql(sql):
+    """generate hunks of SQL that are between the bookends
+       return: tuple of beginning bookend, closing bookend, and contents
+         note: beginning & end of string are returned as None"""
+    bookends = ("\n", ";", "--")
+    last_bookend_found = None
     start = 0
-    while (line.find(";", start) > -1):
-        post_semi = line.find(";", start) + 1
-        if not line_has_sql(line, post_semi):
-            break
+
+    while start <= len(sql):
+        results = get_next_occurence(sql[start:], bookends)
+        if results is None:
+            yield (last_bookend_found, None, sql[start:])
+            start = len(sql) + 1
         else:
-            #drop an EXEC SQL in just after the semicolon
-            line = line[start:post_semi] + "EXEC SQL " + line[post_semi:]
-            start = post_semi
-    return line
+            (index, bookend) = results
+            end = start + index
+            yield (last_bookend_found, bookend, sql[start:end])
+            start = end + len(bookend)
+            last_bookend_found = bookend
 
-def line_has_trailing_semicolon(line):
-    return line.rstrip().endswith(";")
-
-def line_has_valid_semicolon(line):
-    """return true if a semicolon is found before a comment starts"""
-    if ";" in line:
-        if "--" in line:
-            return line.find(";") < line.find("--")
-        else:
-            return True
-    else:
-        return False
-
-def line_has_sql(line, start=0):
-    """return true if line is not entirely whitespace and/or comment
-       start parameter specifies where to start checking the string"""
-    clean = line[start:].strip()
-    return len(clean) != 0 and not clean.startswith("--")
+def get_next_occurence(haystack, needles):
+    """find next occurence of one of the needles in the haystack
+       return: tuple of (index, needle found)
+           or: None if no needle was found"""
+    min_index = None
+    min_needle = None
+    for needle in needles:
+        index = haystack.find(needle)
+        if index != -1:
+            if min_index is None or index < min_index:
+                min_index = index
+                min_needle = needle
+    if min_index is not None:
+        return (min_index, min_needle)
+    return None

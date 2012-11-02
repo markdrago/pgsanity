@@ -3,6 +3,40 @@ import unittest
 from pgsanity import sqlprep
 
 class TestSqlPrep(unittest.TestCase):
+    def test_split_sql_nothing_interesting(self):
+        text = "abcd123"
+        expected = [(None, None, "abcd123"),]
+        self.assertEquals(expected, list(sqlprep.split_sql(text)))
+
+    def test_split_sql_trailing_semicolon(self):
+        text = "abcd123;"
+        expected = [(None, ";", "abcd123"), (";", None, '')]
+        self.assertEquals(expected, list(sqlprep.split_sql(text)))
+
+    def test_split_sql_comment_between_statements(self):
+        text = "select a from b;\n"
+        text += "--comment here\n"
+        text += "select a from b;"
+
+        expected = [(None, ";", "select a from b"),
+                    (";", "\n", ''),
+                    ("\n", "--", ''),
+                    ("--", "\n", 'comment here'),
+                    ("\n", ";", 'select a from b'),
+                    (";", None, '')]
+        self.assertEquals(expected, list(sqlprep.split_sql(text)))
+
+    def test_split_sql_inline_comment(self):
+        text = "select a from b; --comment here\n"
+        text += "select a from b;"
+
+        expected = [(None, ";", "select a from b"),
+                    (";", "--", ' '),
+                    ("--", "\n", 'comment here'),
+                    ("\n", ";", 'select a from b'),
+                    (";", None, '')]
+        self.assertEquals(expected, list(sqlprep.split_sql(text)))
+
     def test_handles_first_column_comment_between_statements(self):
         text = "blah blah;\n"
         text += "--comment here\n"
@@ -51,24 +85,6 @@ class TestSqlPrep(unittest.TestCase):
         expected = "EXEC SQL " + text1 + "EXEC SQL " + text2
         self.assertEqual(expected, sqlprep.prepare_sql(text1 + text2))
 
-    def test_line_has_sql_affirmative(self):
-        self.assertTrue(sqlprep.line_has_sql("select a from b;"))
-
-    def test_line_has_sql_entirely_comment(self):
-        self.assertFalse(sqlprep.line_has_sql("--comment here"))
-
-    def test_line_has_sql_entirely_whitespace(self):
-        self.assertFalse(sqlprep.line_has_sql("  \t"))
-
-    def test_line_has_sql_whitespace_before_comment(self):
-        self.assertFalse(sqlprep.line_has_sql("  \t--comment here"))
-
-    def test_line_has_sql_with_start_before_comment(self):
-        self.assertTrue(sqlprep.line_has_sql("abcdef--comment here", 5))
-
-    def test_line_has_sql_with_start_after_comment(self):
-        self.assertFalse(sqlprep.line_has_sql("abcdef--comment here", 6))
-
     def test_prepend_exec_sql_wrapped_statement(self):
         text = "create table control.myfavoritetable (\n"
         text += "    id bigint\n"
@@ -81,16 +97,6 @@ class TestSqlPrep(unittest.TestCase):
         expected = "EXEC SQL select a from b;EXEC SQL  select c from d;"
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
-    def test_deal_with_inline_semicolons_simple(self):
-        text = "before;after"
-        expected = "before;EXEC SQL after"
-        self.assertEqual(expected, sqlprep.deal_with_inline_semicolons(text))
-
-    def test_deal_with_inline_semicolons_skip_ending_semicolon(self):
-        text = "before;after;"
-        expected = "before;EXEC SQL after;"
-        self.assertEqual(expected, sqlprep.deal_with_inline_semicolons(text))
-
     def test_prepend_exec_sql_wrapped_statement_with_multiple_semis_on_last_line(self):
         text1 = "create table control.myfavoritetable (\n"
         text2 = "    id bigint\n"
@@ -102,6 +108,21 @@ class TestSqlPrep(unittest.TestCase):
     def test_prepend_exec_sql_wrapped_trailing_sql(self):
         text = "select a from b; select a\nfrom b;"
         expected = "EXEC SQL select a from b;EXEC SQL  select a\nfrom b;"
+        self.assertEqual(expected, sqlprep.prepare_sql(text))
+
+    def test_comment_start_found_within_comment_within_statement(self):
+        text = "select a from b --comment in comment --here\nwhere c=1;"
+        expected = "EXEC SQL select a from b --comment in comment --here\nwhere c=1;"
+        self.assertEqual(expected, sqlprep.prepare_sql(text))
+
+    def test_comment_start_found_within_comment_between_statements(self):
+        text = "select a from b; --comment in comment --here\nselect c from d;"
+        expected = "EXEC SQL select a from b; //comment in comment //here\nEXEC SQL select c from d;"
+        self.assertEqual(expected, sqlprep.prepare_sql(text))
+
+    def test_double_semicolon(self):
+        text = "select a from b;;"
+        expected = "EXEC SQL select a from b;;"
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
     def test_semi_found_in_comment_at_end_of_line(self):

@@ -6,7 +6,9 @@ setup(
     author='Mark Drago',
     author_email='markdrago@gmail.com',
     url='http://github.com/markdrago/pgsanity',
+    download_url='http://pypi.python.org/pypi/pgsanity',
     description='Check syntax of sql for PostgreSQL',
+    license='MIT',
     packages=['pgsanity'],
     entry_points={
         'console_scripts': [

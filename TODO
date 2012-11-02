@@ -1,3 +1,2 @@
 - verbose mode which prints name of file and OK
-- informative error message when ecpg is not found
 - require last SQL line in file to end with ';'? might already work...

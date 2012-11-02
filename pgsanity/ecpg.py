@@ -1,4 +1,6 @@
+from __future__ import print_function
 import subprocess
+import sys
 import re
 import os
 
@@ -6,9 +8,14 @@ def check_syntax(filename):
     args = ["ecpg", "-o", "-", filename]
 
     with open(os.devnull, "w") as devnull:
-        proc = subprocess.Popen(args, shell=False,
-                                stdout=devnull,
-                                stderr=subprocess.PIPE)
+        try:
+            proc = subprocess.Popen(args, shell=False,
+                                    stdout=devnull,
+                                    stderr=subprocess.PIPE)
+        except OSError as e:
+            msg = "Unable to execute 'ecpg', you likely need to install it.'"
+            raise OSError(msg)
+
         proc.wait()
         if proc.returncode == 0:
             return (True, "")

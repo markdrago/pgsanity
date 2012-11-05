@@ -26,6 +26,7 @@ errors of the SQL.
 ###Getting PgSanity
 PgSanity is available in the Python Package Index, so you can install it with either easy_install or pip.  Here's [PgSanity's page on PyPI](http://pypi.python.org/pypi/pgsanity).
 - sudo pip install pgsanity **or** sudo easy_install pgsanity
+    - If you don't have pip you can get it on ubuntu/debian by running: sudo apt-get install python-pip
 
 ##Usage
 PgSanity accepts filenames as parameters and it will report SQL syntax errors which exist in those files.  PgSanity will exit with a status code of 0 if the syntax of the SQL looks good and a 1 if any errors were found.

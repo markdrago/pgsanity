@@ -135,6 +135,26 @@ class TestSqlPrep(unittest.TestCase):
         expected = "//comment on line 1\nEXEC SQL select a from b;"
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
+    def test_handles_block_comment_on_last_line(self):
+        text = "select a from b;\n/*\nselect c from d;\n*/"
+        expected = "EXEC SQL select a from b;\n/*\nselect c from d;\n*/"
+        self.assertEqual(expected, sqlprep.prepare_sql(text))
+
+    def test_semi_found_in_block_comment(self):
+        text = "select a\n/*\n;\n*/from b;"
+        expected = "EXEC SQL " + text
+        self.assertEqual(expected, sqlprep.prepare_sql(text))
+
+    def test_line_comment_in_block_comment_is_undisturbed(self):
+        text = "select a\n/*\n--hey\n*/\nfrom b;"
+        expected = "EXEC SQL " + text
+        self.assertEqual(expected, sqlprep.prepare_sql(text))
+
+    def test_opening_two_block_comments_only_requries_one_close(self):
+        text = "select a\n/*\n/*\ncomment\n*/from b;select c from d;"
+        expected = "EXEC SQL select a\n/*\n/*\ncomment\n*/from b;EXEC SQL select c from d;"
+        self.assertEqual(expected, sqlprep.prepare_sql(text))
+
 #TODO:
 #  semicolon followed by only whitespace / comments
 #  multiple semicolons in a row (legal?)

@@ -4,21 +4,24 @@ def prepare_sql(sql):
     results = ""
 
     in_statement = False
-    in_comment = False
+    in_line_comment = False
+    in_block_comment = False
     for (start, end, contents) in split_sql(sql):
         precontents = None
         start_str = None
 
         #decide where we are
-        if not in_statement and not in_comment:
+        if not in_statement and not in_line_comment and not in_block_comment:
             #not currently in any block
-            if start != "--" and len(contents.strip()) > 0:
+            if start != "--" and start != "/*" and len(contents.strip()) > 0:
                 #not starting a comment and there is contents
                 in_statement = True
                 precontents = "EXEC SQL "
 
-        if start == "--":
-            in_comment = True
+        if start == "/*":
+            in_block_comment = True
+        elif start == "--" and not in_block_comment:
+            in_line_comment = True
             if not in_statement:
                 start_str = "//"
 
@@ -26,11 +29,14 @@ def prepare_sql(sql):
         precontents = precontents or ""
         results += start_str + precontents + contents
 
-        if not in_comment and in_statement and end == ";":
+        if not in_line_comment and not in_block_comment and in_statement and end == ";":
             in_statement = False
 
-        if in_comment and end == "\n":
-            in_comment = False
+        if in_block_comment and end == "*/":
+            in_block_comment = False
+
+        if in_line_comment and end == "\n":
+            in_line_comment = False
 
     return results
 
@@ -38,7 +44,7 @@ def split_sql(sql):
     """generate hunks of SQL that are between the bookends
        return: tuple of beginning bookend, closing bookend, and contents
          note: beginning & end of string are returned as None"""
-    bookends = ("\n", ";", "--")
+    bookends = ("\n", ";", "--", "/*", "*/")
     last_bookend_found = None
     start = 0
 

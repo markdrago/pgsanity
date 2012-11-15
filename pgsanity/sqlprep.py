@@ -1,7 +1,11 @@
 import re
+try:
+    import cStringIO as StringIO
+except ImportError:
+    import StringIO
 
 def prepare_sql(sql):
-    results = ""
+    results = StringIO.StringIO()
 
     in_statement = False
     in_line_comment = False
@@ -27,7 +31,7 @@ def prepare_sql(sql):
 
         start_str = start_str or start or ""
         precontents = precontents or ""
-        results += start_str + precontents + contents
+        results.write(start_str + precontents + contents)
 
         if not in_line_comment and not in_block_comment and in_statement and end == ";":
             in_statement = False
@@ -38,7 +42,9 @@ def prepare_sql(sql):
         if in_line_comment and end == "\n":
             in_line_comment = False
 
-    return results
+    response = results.getvalue()
+    results.close()
+    return response
 
 def split_sql(sql):
     """generate hunks of SQL that are between the bookends
@@ -49,29 +55,28 @@ def split_sql(sql):
     start = 0
 
     while start <= len(sql):
-        results = get_next_occurence(sql[start:], bookends)
+        results = get_next_occurence(sql, start, bookends)
         if results is None:
             yield (last_bookend_found, None, sql[start:])
             start = len(sql) + 1
         else:
-            (index, bookend) = results
-            end = start + index
+            (end, bookend) = results
             yield (last_bookend_found, bookend, sql[start:end])
             start = end + len(bookend)
             last_bookend_found = bookend
 
-def get_next_occurence(haystack, needles):
+def get_next_occurence(haystack, offset, needles):
     """find next occurence of one of the needles in the haystack
        return: tuple of (index, needle found)
            or: None if no needle was found"""
-    min_index = None
-    min_needle = None
-    for needle in needles:
-        index = haystack.find(needle)
-        if index != -1:
-            if min_index is None or index < min_index:
-                min_index = index
-                min_needle = needle
-    if min_index is not None:
-        return (min_index, min_needle)
+    #make map of first char to full needle (only works if all needles
+    #have different first characters)
+    firstcharmap = dict([(n[0], n) for n in needles])
+    firstchars = firstcharmap.keys()
+    while offset < len(haystack):
+        if haystack[offset] in firstchars:
+            possible_needle = firstcharmap[haystack[offset]]
+            if haystack[offset:offset+len(possible_needle)] == possible_needle:
+                return (offset, possible_needle)
+        offset += 1
     return None

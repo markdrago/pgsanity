@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='pgsanity',
-    version='0.2.6',
+    version='0.2.7',
     author='Mark Drago',
     author_email='markdrago@gmail.com',
     url='http://github.com/markdrago/pgsanity',
@@ -17,7 +17,8 @@ setup(
     },
     test_suite='test',
     classifiers=[
-        'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',
         'Operating System :: POSIX',
         'Development Status :: 4 - Beta',

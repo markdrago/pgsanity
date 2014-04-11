@@ -14,14 +14,14 @@ class TestEcpg(unittest.TestCase):
 
     def test_simple_success(self):
         text = "EXEC SQL select a from b;"
-        write_out(self.file, text)
+        write_out(self.file, text.encode('utf-8'))
 
         (success, msg) = ecpg.check_syntax(self.file.name)
         self.assertTrue(success)
 
     def test_simple_failure(self):
         text = "EXEC SQL garbage select a from b;"
-        write_out(self.file, text)
+        write_out(self.file, text.encode('utf-8'))
 
         (success, msg) = ecpg.check_syntax(self.file.name)
         self.assertFalse(success)

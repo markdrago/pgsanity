@@ -15,7 +15,7 @@ setup(
             'pgsanity = pgsanity.pgsanity:main'
         ]
     },
-    test_suite='unittest2.collector',
+    test_suite='test',
     classifiers=[
         'Programming Language :: Python',
         'License :: OSI Approved :: MIT License',

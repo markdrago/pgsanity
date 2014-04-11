@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+from __future__ import absolute_import
 import argparse
 import tempfile
 import sys
 import os
 
-import sqlprep
-import ecpg
+from pgsanity import sqlprep
+from pgsanity import ecpg
 
 def get_config(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(description='Check syntax of SQL for PostgreSQL')
@@ -19,7 +20,7 @@ def prep_file(filelike):
        return: name of temp file which contains prepped sql"""
     raw_sql = filelike.read()
     prepped_sql = sqlprep.prepare_sql(raw_sql)
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pgc") as dst:
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix=".pgc") as dst:
         dst.write(prepped_sql)
     return dst.name
 

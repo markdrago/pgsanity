@@ -6,12 +6,12 @@ class TestSqlPrep(unittest.TestCase):
     def test_split_sql_nothing_interesting(self):
         text = "abcd123"
         expected = [(None, None, "abcd123")]
-        self.assertEquals(expected, list(sqlprep.split_sql(text)))
+        self.assertEqual(expected, list(sqlprep.split_sql(text)))
 
     def test_split_sql_trailing_semicolon(self):
         text = "abcd123;"
         expected = [(None, ";", "abcd123"), (";", None, '')]
-        self.assertEquals(expected, list(sqlprep.split_sql(text)))
+        self.assertEqual(expected, list(sqlprep.split_sql(text)))
 
     def test_split_sql_comment_between_statements(self):
         text = "select a from b;\n"
@@ -24,7 +24,7 @@ class TestSqlPrep(unittest.TestCase):
                     ("--", "\n", 'comment here'),
                     ("\n", ";", 'select a from b'),
                     (";", None, '')]
-        self.assertEquals(expected, list(sqlprep.split_sql(text)))
+        self.assertEqual(expected, list(sqlprep.split_sql(text)))
 
     def test_split_sql_inline_comment(self):
         text = "select a from b; --comment here\n"
@@ -35,7 +35,7 @@ class TestSqlPrep(unittest.TestCase):
                     ("--", "\n", 'comment here'),
                     ("\n", ";", 'select a from b'),
                     (";", None, '')]
-        self.assertEquals(expected, list(sqlprep.split_sql(text)))
+        self.assertEqual(expected, list(sqlprep.split_sql(text)))
 
     def test_handles_first_column_comment_between_statements(self):
         text = "blah blah;\n"

@@ -1,11 +1,11 @@
 import re
 try:
-    import cStringIO as StringIO
+    from cStringIO import StringIO
 except ImportError:
-    import StringIO
+    from io import StringIO
 
 def prepare_sql(sql):
-    results = StringIO.StringIO()
+    results = StringIO()
 
     in_statement = False
     in_line_comment = False

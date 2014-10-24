@@ -6,6 +6,7 @@ import argparse
 import tempfile
 import sys
 import os
+import StringIO
 
 from pgsanity import sqlprep
 from pgsanity import ecpg
@@ -23,6 +24,7 @@ def prep_file(filelike):
     with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix=".pgc") as dst:
         dst.write(prepped_sql)
     return dst.name
+
 
 def check_file(filename=None, show_filename=False):
     #either work with sys.stdin or open the file
@@ -51,6 +53,20 @@ def check_file(filename=None, show_filename=False):
     os.remove(prepped_file)
 
     return result
+
+def check_string(string):
+    """ Prorammatic interface for checking syntax of an input string """
+    # push into a StringIO for filelike behavior
+    string_buffer = StringIO.StringIO()
+    string_buffer.write(string)
+    string_buffer.seek(0)
+
+    # prep the sql, store it in a temp file
+    prepped_file = prep_file(string_buffer)
+
+    # actually check syntax
+    success, msg = ecpg.check_syntax(prepped_file)
+    return success, msg
 
 def check_files(files):
     if files is None or len(files) == 0:

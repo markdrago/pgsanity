@@ -3,10 +3,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 import argparse
-import tempfile
 import sys
-import os
-import StringIO
 
 from pgsanity import sqlprep
 from pgsanity import ecpg
@@ -16,16 +13,6 @@ def get_config(argv=sys.argv[1:]):
     parser.add_argument('files', nargs='*', default=None)
     return parser.parse_args(argv)
 
-def prep_file(filelike):
-    """read in sql, prepare it, save prepped sql to temp file
-       return: name of temp file which contains prepped sql"""
-    raw_sql = filelike.read()
-    prepped_sql = sqlprep.prepare_sql(raw_sql)
-    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix=".pgc") as dst:
-        dst.write(prepped_sql)
-    return dst.name
-
-
 def check_file(filename=None, show_filename=False):
     #either work with sys.stdin or open the file
     filelike = sys.stdin
@@ -33,11 +20,8 @@ def check_file(filename=None, show_filename=False):
         filelike = open(filename, "r")
 
     #prep the sql, store it in a temp file
-    prepped_file = prep_file(filelike)
-    filelike.close()
-
-    #actually check the syntax of the prepped file
-    (success, msg) = ecpg.check_syntax(prepped_file)
+    sql_string = filelike.read()
+    success, msg = check_string(sql_string)
 
     #report results
     result = 0
@@ -49,23 +33,11 @@ def check_file(filename=None, show_filename=False):
         print(prefix + msg)
         result = 1
 
-    #remove the temp file that contained the prepped sql
-    os.remove(prepped_file)
-
     return result
 
-def check_string(string):
-    """ Prorammatic interface for checking syntax of an input string """
-    # push into a StringIO for filelike behavior
-    string_buffer = StringIO.StringIO()
-    string_buffer.write(string)
-    string_buffer.seek(0)
-
-    # prep the sql, store it in a temp file
-    prepped_file = prep_file(string_buffer)
-
-    # actually check syntax
-    success, msg = ecpg.check_syntax(prepped_file)
+def check_string(sql_string):
+    prepped_sql = sqlprep.prepare_sql(sql_string)
+    success, msg = ecpg.check_syntax(prepped_sql)
     return success, msg
 
 def check_files(files):

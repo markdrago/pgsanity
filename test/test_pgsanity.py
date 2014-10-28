@@ -16,12 +16,12 @@ class TestPgSanity(unittest.TestCase):
         self.assertEqual(args, config.files)
 
     def test_check_valid_string(self):
-        text = "EXEC SQL select a from b;"
+        text = "select a from b;"
         (success, msg) = pgsanity.check_string(text)
         self.assertTrue(success)
 
     def test_check_invalid_string(self):
-        text = "EXEC SQL garbage select a from b;"
+        text = "garbage select a from b;"
         (success, msg) = pgsanity.check_string(text)
         self.assertFalse(success)
         self.assertEqual('line 1: ERROR: unrecognized data type name "garbage"', msg)
@@ -36,17 +36,16 @@ class TestPgSanityFiles(unittest.TestCase):
         os.remove(self.file.name)
 
     def test_check_valid_file(self):
-        text = "EXEC SQL select a from b;"
+        text = "select a from b;"
         write_out(self.file, text.encode('utf-8'))
-        (success, msg) = pgsanity.check_file(self.file.name)
-        self.assertTrue(success)
+        status_code = pgsanity.check_file(self.file.name)
+        self.assertEqual(status_code, 0)
 
     def test_check_invalid_file(self):
-        text = "EXEC SQL garbage select a from b;"
+        text = "garbage select a from b;"
         write_out(self.file, text.encode('utf-8'))
-        (success, msg) = pgsanity.check_file(self.file.name)
-        self.assertFalse(success)
-        self.assertEqual('line 1: ERROR: unrecognized data type name "garbage"', msg)
+        status_code = pgsanity.check_file(self.file.name)
+        self.assertNotEqual(status_code, 0)
 
 
 def write_out(f, text):

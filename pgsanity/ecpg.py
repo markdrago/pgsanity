@@ -14,18 +14,13 @@ def check_syntax(string):
                                     stdin=subprocess.PIPE,
                                     stderr=subprocess.PIPE,
                                     universal_newlines=True)
-            proc.communicate(string)
-        except OSError as e:
+            _, err = proc.communicate(string)
+        except OSError:
             msg = "Unable to execute 'ecpg', you likely need to install it.'"
             raise OSError(msg)
-
-        proc.wait()
         if proc.returncode == 0:
-            proc.stderr.close()
             return (True, "")
         else:
-            err = proc.stderr.readline()
-            proc.stderr.close()
             return (False, parse_error(err))
 
 def parse_error(error):

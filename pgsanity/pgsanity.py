@@ -14,6 +14,12 @@ def get_config(argv=sys.argv[1:]):
     return parser.parse_args(argv)
 
 def check_file(filename=None, show_filename=False):
+    """
+    Check whether an input file is valid PostgreSQL. If no filename is
+    passed, STDIN is checked.
+
+    Returns a status code: 0 if the input is valid, 1 if invalid.
+    """
     #either work with sys.stdin or open the file
     filelike = sys.stdin
     if filename is not None:
@@ -36,6 +42,12 @@ def check_file(filename=None, show_filename=False):
     return result
 
 def check_string(sql_string):
+    """
+    Check whether a string is valid PostgreSQL. Returns a boolean
+    indicating validity and a message from ecpg, which will be an
+    empty string if the input was valid, or a description of the
+    problem otherwise.
+    """
     prepped_sql = sqlprep.prepare_sql(sql_string)
     success, msg = ecpg.check_syntax(prepped_sql)
     return success, msg

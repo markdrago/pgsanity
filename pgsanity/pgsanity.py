@@ -21,12 +21,13 @@ def check_file(filename=None, show_filename=False):
     Returns a status code: 0 if the input is valid, 1 if invalid.
     """
     #either work with sys.stdin or open the file
-    filelike = sys.stdin
     if filename is not None:
-        filelike = open(filename, "r")
+        with open(filename, "r") as filelike:
+            sql_string = filelike.read()
+    else:
+        with sys.stdin as filelike:
+            sql_string = sys.stdin.read()
 
-    #prep the sql, store it in a temp file
-    sql_string = filelike.read()
     success, msg = check_string(sql_string)
 
     #report results

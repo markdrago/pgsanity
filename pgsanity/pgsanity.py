@@ -3,9 +3,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 import argparse
-import tempfile
 import sys
-import os
 
 from pgsanity import sqlprep
 from pgsanity import ecpg
@@ -15,27 +13,22 @@ def get_config(argv=sys.argv[1:]):
     parser.add_argument('files', nargs='*', default=None)
     return parser.parse_args(argv)
 
-def prep_file(filelike):
-    """read in sql, prepare it, save prepped sql to temp file
-       return: name of temp file which contains prepped sql"""
-    raw_sql = filelike.read()
-    prepped_sql = sqlprep.prepare_sql(raw_sql)
-    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix=".pgc") as dst:
-        dst.write(prepped_sql)
-    return dst.name
-
 def check_file(filename=None, show_filename=False):
+    """
+    Check whether an input file is valid PostgreSQL. If no filename is
+    passed, STDIN is checked.
+
+    Returns a status code: 0 if the input is valid, 1 if invalid.
+    """
     #either work with sys.stdin or open the file
-    filelike = sys.stdin
     if filename is not None:
-        filelike = open(filename, "r")
+        with open(filename, "r") as filelike:
+            sql_string = filelike.read()
+    else:
+        with sys.stdin as filelike:
+            sql_string = sys.stdin.read()
 
-    #prep the sql, store it in a temp file
-    prepped_file = prep_file(filelike)
-    filelike.close()
-
-    #actually check the syntax of the prepped file
-    (success, msg) = ecpg.check_syntax(prepped_file)
+    success, msg = check_string(sql_string)
 
     #report results
     result = 0
@@ -47,10 +40,18 @@ def check_file(filename=None, show_filename=False):
         print(prefix + msg)
         result = 1
 
-    #remove the temp file that contained the prepped sql
-    os.remove(prepped_file)
-
     return result
+
+def check_string(sql_string):
+    """
+    Check whether a string is valid PostgreSQL. Returns a boolean
+    indicating validity and a message from ecpg, which will be an
+    empty string if the input was valid, or a description of the
+    problem otherwise.
+    """
+    prepped_sql = sqlprep.prepare_sql(sql_string)
+    success, msg = ecpg.check_syntax(prepped_sql)
+    return success, msg
 
 def check_files(files):
     if files is None or len(files) == 0:

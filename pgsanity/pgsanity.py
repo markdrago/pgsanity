@@ -20,7 +20,7 @@ def check_file(filename=None, show_filename=False):
 
     Returns a status code: 0 if the input is valid, 1 if invalid.
     """
-    #either work with sys.stdin or open the file
+    # either work with sys.stdin or open the file
     if filename is not None:
         with open(filename, "r") as filelike:
             sql_string = filelike.read()
@@ -30,10 +30,10 @@ def check_file(filename=None, show_filename=False):
 
     success, msg = check_string(sql_string)
 
-    #report results
+    # report results
     result = 0
     if not success:
-        #possibly show the filename with the error message
+        # possibly show the filename with the error message
         prefix = ""
         if show_filename and filename is not None:
             prefix = filename + ": "
@@ -57,7 +57,7 @@ def check_files(files):
     if files is None or len(files) == 0:
         return check_file()
     else:
-        #show filenames if > 1 file was passed as a parameter
+        # show filenames if > 1 file was passed as a parameter
         show_filenames = (len(files) > 1)
 
         accumulator = 0

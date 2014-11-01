@@ -51,5 +51,3 @@ class TestPgSanityFiles(unittest.TestCase):
 def write_out(f, text):
     f.write(text)
     f.flush()
-
-    

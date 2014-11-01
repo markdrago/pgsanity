@@ -155,7 +155,7 @@ class TestSqlPrep(unittest.TestCase):
         expected = "EXEC SQL select a\n/*\n/*\ncomment\n*/from b;EXEC SQL select c from d;"
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
-#TODO:
+#  TODO:
 #  semicolon followed by only whitespace / comments
 #  multiple semicolons in a row (legal?)
 #  line starts with semi and then has a statement

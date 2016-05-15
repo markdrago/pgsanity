@@ -24,8 +24,8 @@ errors of the SQL.
     - arch: sudo pacman -S postgresql-libs
 
 ###Getting PgSanity
-PgSanity is available in the Python Package Index, so you can install it with either easy_install or pip.  Here's [PgSanity's page on PyPI](http://pypi.python.org/pypi/pgsanity).
-- sudo pip install pgsanity **or** sudo easy_install pgsanity
+PgSanity is available in the Python Package Index, so you can install it with either easy\_install or pip.  Here's [PgSanity's page on PyPI](http://pypi.python.org/pypi/pgsanity).
+- sudo pip install pgsanity **or** sudo easy\_install pgsanity
     - If you don't have pip you can get it on ubuntu/debian by running: sudo apt-get install python-pip
 
 ##Usage

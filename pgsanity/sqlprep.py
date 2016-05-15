@@ -17,14 +17,14 @@ def prepare_sql(sql):
         # decide where we are
         if not in_statement and not in_line_comment and not in_block_comment:
             # not currently in any block
-            if start not in ["--","\n\\","\\"] and start != "/*" and len(contents.strip()) > 0:
+            if start not in ["--","\\"] and start != "/*" and len(contents.strip()) > 0:
                 # not starting a comment and there is contents
                 in_statement = True
                 precontents = "EXEC SQL "
 
         if start == "/*":
             in_block_comment = True
-        elif start in ["--","\n\\","\\"] and not in_block_comment:
+        elif start in ["--","\\"] and not in_block_comment:
             in_line_comment = True
             if not in_statement:
                 start_str = "//"
@@ -50,7 +50,7 @@ def split_sql(sql):
     """generate hunks of SQL that are between the bookends
        return: tuple of beginning bookend, closing bookend, and contents
          note: beginning & end of string are returned as None"""
-    bookends = ("\n\\","\n", ";", "--", "/*", "*/","\\")
+    bookends = ("\n", ";", "--", "/*", "*/","\\")
     last_bookend_found = None
     start = 0
 

@@ -24,7 +24,7 @@ def prepare_sql(sql):
 
         if start == "/*":
             in_block_comment = True
-        elif start in ["--","\\"] and not in_block_comment:
+        elif start in ["--","\n\\"] and not in_block_comment:
             in_line_comment = True
             if not in_statement:
                 start_str = "//"
@@ -50,7 +50,7 @@ def split_sql(sql):
     """generate hunks of SQL that are between the bookends
        return: tuple of beginning bookend, closing bookend, and contents
          note: beginning & end of string are returned as None"""
-    bookends = ("\n", ";", "--", "/*", "*/", "\\")
+    bookends = ("\n\\","\n", ";", "--", "/*", "*/")
     last_bookend_found = None
     start = 0
 

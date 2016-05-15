@@ -43,7 +43,7 @@ def check_file(filename=None, show_filename=False):
     """
     # either work with sys.stdin or open the file
     if filename is not None:
-        with open(filename, "rb") as filelike:
+        with open(filename, "r") as filelike:
             sql_string = filelike.read()
     else:
         with sys.stdin as filelike:
@@ -53,7 +53,7 @@ def check_file(filename=None, show_filename=False):
     bom_present = check_for_bom(nose)
     sql_string = sql_string[len(nose):] if bom_present else sql_string
     success, msg = check_string(sql_string.decode("utf-8"))
-    # ^ The above called to decode() is safe for both ASCII and UTF-8 data.
+    # ^ The above call to decode() is safe for both ASCII and UTF-8 data.
 
     # report results
     result = 0

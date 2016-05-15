@@ -44,17 +44,16 @@ def check_file(filename=None, show_filename=False):
     # either work with sys.stdin or open the file
     if filename is not None:
         with open(filename, "rb") as filelike:
-            # discard BOM if present then read remaining bytes
-            nose = filelike.read(len(BOM_UTF8))
-            nose = '' if check_for_bom(nose) else nose
-            sql_string = nose + filelike.read()
-            sql_string = sql_string.decode("utf-8")
-            # ^ This is safe for both ASCII and UTF-8 files.
+            sql_string = filelike.read()
     else:
         with sys.stdin as filelike:
             sql_string = sys.stdin.read()
-
-    success, msg = check_string(sql_string)
+    # check for BOM-table and discard if present
+    nose = sql_string[0:len(BOM_UTF8)]
+    bom_present = check_for_bom(nose)
+    sql_string = sql_string[len(nose):] if bom_present else sql_string
+    success, msg = check_string(sql_string.decode("utf-8"))
+    # ^ The above called to decode() is safe for both ASCII and UTF-8 data.
 
     # report results
     result = 0

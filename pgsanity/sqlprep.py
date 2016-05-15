@@ -17,7 +17,7 @@ def prepare_sql(sql):
         # decide where we are
         if not in_statement and not in_line_comment and not in_block_comment:
             # not currently in any block
-            if start != "--" and start != "/*" and len(contents.strip()) > 0:
+            if start not in ["--","\n\\"] and start != "/*" and len(contents.strip()) > 0:
                 # not starting a comment and there is contents
                 in_statement = True
                 precontents = "EXEC SQL "

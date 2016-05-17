@@ -15,24 +15,26 @@ def get_config(argv=sys.argv[1:]):
     parser.add_argument('files', nargs='*', default=None)
     return parser.parse_args(argv)
 
-def check_for_bom(starting_bytes):
-    """ Check the first few bytes of a file to determine whether input
-    contains a BOM-table or not.
+def remove_bom_if_exists(sql_string):
+    """ Take the entire SQL-payload of a file (or stream) and strip the BOM-table
+    if one was detected.
 
-    Returns a boolean indicating whether a BOM-table appears to be present.
+    sql_string   --   string-representation of incoming character-data. Value
+                      should be passed RAW, meaning BEFORE regular decoding take
+                      place. Otherwise, BOM-detection may fail.
+
+    Returns a BOM-free SQL-payload.
     """
-    minlen = len(BOM_UTF8)
-    if len(starting_bytes) < minlen:
-        raise ValueError("Starting bytes of file must be at least"
-                         " {} bytes long to check for BOM.".format(minlen))
-    encoding = detect(starting_bytes)["encoding"]
-    is_utf8 = encoding in ["UTF-8","UTF-8-SIG"]
-    return is_utf8 and starting_bytes.startswith(BOM_UTF8)
-    # ^ The above is a tiny bit redundant given that 'UTF-8-SIG' simply means
-    # "UTF-8 file with a BOM-table". However, older versions of chardet don't
-    # support this, and will just detect 'UTF-8', leaving us to check for the
-    # BOM ourselves as we do above. The extra check is not harmful on
-    # systems that have a more recent chardet module.
+    encoding = detect(sql_string)["encoding"]
+    is_utf8 = encoding in ["UTF-8","UTF-8-SIG"] # *
+    bom_present = is_utf8 and sql_string.startswith(BOM_UTF8) # *
+    sql_string = sql_string[len(BOM_UTF8):] if bom_present else sql_string
+    return sql_string 
+    # * The marked lines above are a tiny bit redundant given that 'UTF-8-SIG'
+    # simply means "UTF-8 file with a BOM-table". However, older versions of
+    # chardet don't support this, and will just detect 'UTF-8', leaving us to
+    # check for the BOM ourselves as we do above. The extra check is not
+    # harmful on systems that have a more recent chardet module.
 
 def check_file(filename=None, show_filename=False):
     """
@@ -48,10 +50,7 @@ def check_file(filename=None, show_filename=False):
     else:
         with sys.stdin as filelike:
             sql_string = sys.stdin.read()
-    # check for BOM-table and discard if present
-    nose = sql_string[0:len(BOM_UTF8)]
-    bom_present = check_for_bom(nose)
-    sql_string = sql_string[len(nose):] if bom_present else sql_string
+    sql_string = remove_bom_if_exists(sql_string)
     success, msg = check_string(sql_string.decode("utf-8"))
     # ^ The above call to decode() is safe for both ASCII and UTF-8 data.
 

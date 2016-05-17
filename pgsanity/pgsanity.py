@@ -21,7 +21,7 @@ def remove_bom_if_exists(sql_string):
 
     sql_string   --   string-representation of incoming character-data. Value
                       should be passed RAW, meaning BEFORE regular decoding take
-                      place. Otherwise, BOM-detection may fail.
+                      place. Otherwise, BOM-detection may fail. 
 
     Returns a BOM-free SQL-payload.
     """

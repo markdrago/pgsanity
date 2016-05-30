@@ -91,7 +91,7 @@ def get_processing_state(current_state, current_char):
         '"2':  {0: '_', '"': '"', ';': ';'}
     }
     # ^ Above, transitions[current_state][0] represents the transition to take
-    # if no transition is explicitly defined for the passed-in symbol
+    # if no transition is explicitly defined for the passed-in character
     if current_state not in transitions:
         raise ValueError("Received an invalid state '{}'".format(current_state))
     if current_char in transitions[current_state]:
@@ -122,23 +122,7 @@ def split_sql(sql):
         elif ( previous_state == '--p' and current_state == '--' ):
         # if previous character was the start of a line-comment token, discard
             current_sql_expression = current_sql_expression[:-1]
-    if current_sql_expression and not re.match("[\s;]*",current_sql_expression):
+    if current_sql_expression:
     # unless only whitespace and semicolons left, return remaining characters
     # between last ; and EOF
         yield current_sql_expression + ';'
-
-def get_next_occurence(haystack, offset, needles):
-    """find next occurence of one of the needles in the haystack
-       return: tuple of (index, needle found)
-           or: None if no needle was found"""
-    # make map of first char to full needle (only works if all needles
-    # have different first characters)
-    firstcharmap = dict([(n[0], n) for n in needles])
-    firstchars = firstcharmap.keys()
-    while offset < len(haystack):
-        if haystack[offset] in firstchars:
-            possible_needle = firstcharmap[haystack[offset]]
-            if haystack[offset:offset + len(possible_needle)] == possible_needle:
-                return (offset, possible_needle)
-        offset += 1
-    return None

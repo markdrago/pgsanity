@@ -47,9 +47,8 @@ class TestSqlPrep(unittest.TestCase):
         expected += "EXEC SQL  \nblah blah;"
 
         self.assertEqual(expected, sqlprep.prepare_sql(text))
-        # ^ Returning the empty string [BOOKMARK]
 
-    def test_does_not_mangle_inline_comment_within_statement(self):
+    def test_does_not_mangle_inline_comment_within_statement(self): # BOOKMARK
         text = "blah blah--comment here\n"
         text += "blah blah"
 
@@ -58,7 +57,7 @@ class TestSqlPrep(unittest.TestCase):
 
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
-    def test_does_not_mangle_first_column_comment_within_statement(self):
+    def test_does_not_mangle_first_column_comment_within_statement(self): # BOOKMARK
         text = "select a from b\n"
         text += "--comment here\n"
         text += "where c=3"
@@ -69,7 +68,6 @@ class TestSqlPrep(unittest.TestCase):
         expected = "EXEC SQL " + expected
 
         self.assertEqual(expected, sqlprep.prepare_sql(text))
-        # ^ Returning the empty string [BOOKMARK]
 
     def test_prepend_exec_sql_to_simple_statements(self):
         text = "create table control.myfavoritetable (id bigint);"
@@ -117,9 +115,9 @@ class TestSqlPrep(unittest.TestCase):
         expected = "EXEC SQL select a from b;EXEC SQL  \nselect c from d;"
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
-    def test_double_semicolon(self): # BOOKMARK
+    def test_double_semicolon(self):
         text = "select a from b;;"
-        expected = "EXEC SQL select a from b;"
+        expected = "EXEC SQL select a from b;EXEC SQL ;"
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
     def test_semi_found_in_comment_at_end_of_line(self):
@@ -132,7 +130,7 @@ class TestSqlPrep(unittest.TestCase):
         expected = "EXEC SQL \nselect a from b;"
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
-    def test_handles_block_comment_on_last_line(self):
+    def test_handles_block_comment_on_last_line(self): # [BOOKMARK]
         text = "select a from b;\n/*\nselect c from d;\n*/"
         expected = "EXEC SQL select a from b;EXEC SQL \n/*\nselect c from d;\n*/;"
         self.assertEqual(expected, sqlprep.prepare_sql(text))

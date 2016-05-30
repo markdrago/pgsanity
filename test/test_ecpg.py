@@ -14,6 +14,11 @@ class TestEcpg(unittest.TestCase):
         self.assertFalse(success)
         self.assertEqual('line 1: ERROR: unrecognized data type name "garbage"', msg)
 
+    def test_empty_sql_okay(self):
+        text = u"EXEC SQL ;"
+        (success, msg) = ecpg.check_syntax(text)
+        self.assertTrue(success)
+
     def test_parse_error_simple(self):
         error = '/tmp/tmpLBKZo5.pgc:1: ERROR: unrecognized data type name "garbage"'
         expected = 'line 1: ERROR: unrecognized data type name "garbage"'

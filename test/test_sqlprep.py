@@ -114,10 +114,10 @@ class TestSqlPrep(unittest.TestCase):
 
     def test_comment_start_found_within_comment_between_statements(self):
         text = "select a from b; --comment in comment --here\nselect c from d;"
-        expected = "EXEC SQL select a from b; EXEC SQL  \nselect c from d;"
+        expected = "EXEC SQL select a from b;EXEC SQL  \nselect c from d;"
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
-    def test_double_semicolon(self):
+    def test_double_semicolon(self): # BOOKMARK
         text = "select a from b;;"
         expected = "EXEC SQL select a from b;"
         self.assertEqual(expected, sqlprep.prepare_sql(text))

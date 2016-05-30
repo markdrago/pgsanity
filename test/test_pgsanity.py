@@ -27,6 +27,16 @@ class TestPgSanity(unittest.TestCase):
         self.assertFalse(success)
         self.assertEqual('line 1: ERROR: unrecognized data type name "garbage"', msg)
 
+    def test_check_invalid_string_2(self):
+        text = "SELECT '\n"
+        text += "-- this is not really a comment' AS c;\n"
+        text += "SELECT '\n"
+        text += "-- neither is this' AS c spam;"
+
+        (success,msg) = pgsanity.check_string(text)
+        self.assertFalse(success)
+        self.assertEqual('line 4: ERROR: syntax error at or near "spam"')
+
     def test_bom_gets_stripped(self):
         bomless = "SELECT 'pining for the fjords';".encode('utf-8')
         bomful = BOM_UTF8 + bomless

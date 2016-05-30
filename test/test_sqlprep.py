@@ -7,7 +7,6 @@ class TestSqlPrep(unittest.TestCase):
         text = "abcd123"
         expected = ["abcd123;"]
         self.assertEqual(expected, list(sqlprep.split_sql(text)))
-        # ^ Retuning the empty string [BOOKMARK]
 
     def test_split_sql_trailing_semicolon(self):
         text = "abcd123;"
@@ -48,7 +47,7 @@ class TestSqlPrep(unittest.TestCase):
 
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
-    def test_does_not_mangle_inline_comment_within_statement(self): # BOOKMARK
+    def test_does_not_mangle_inline_comment_within_statement(self):
         text = "blah blah--comment here\n"
         text += "blah blah"
 
@@ -57,7 +56,7 @@ class TestSqlPrep(unittest.TestCase):
 
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
-    def test_does_not_mangle_first_column_comment_within_statement(self): # BOOKMARK
+    def test_does_not_mangle_first_column_comment_within_statement(self):
         text = "select a from b\n"
         text += "--comment here\n"
         text += "where c=3"
@@ -120,6 +119,11 @@ class TestSqlPrep(unittest.TestCase):
         expected = "EXEC SQL select a from b;EXEC SQL ;"
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
+    def test_triple_semicolon(self):
+        text = "select a from b;;;"
+        expected = "EXEC SQL select a from b;EXEC SQL ;EXEC SQL ;"
+        self.assertEqual(expected, sqlprep.prepare_sql(text))
+
     def test_semi_found_in_comment_at_end_of_line(self):
         text = "select a\nfrom b --semi in comment;\nwhere c=1;"
         expected = "EXEC SQL select a\nfrom b \nwhere c=1;"
@@ -130,7 +134,7 @@ class TestSqlPrep(unittest.TestCase):
         expected = "EXEC SQL \nselect a from b;"
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
-    def test_handles_block_comment_on_last_line(self): # [BOOKMARK]
+    def test_handles_block_comment_on_last_line(self):
         text = "select a from b;\n/*\nselect c from d;\n*/"
         expected = "EXEC SQL select a from b;EXEC SQL \n/*\nselect c from d;\n*/;"
         self.assertEqual(expected, sqlprep.prepare_sql(text))
@@ -150,7 +154,12 @@ class TestSqlPrep(unittest.TestCase):
         expected = "EXEC SQL select a\n/*\n/*\ncomment\n*/from b;EXEC SQL select c from d;"
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
-#  TODO:
-#  semicolon followed by only whitespace / comments
-#  multiple semicolons in a row (legal?)
-#  line starts with semi and then has a statement
+    def test_trailing_whitespace_after_semicolon(self):
+        text = "select a from b; "
+        expected = "EXEC SQL select a from b;EXEC SQL  ;"
+        self.assertEqual(expected, sqlprep.prepare_sql(text))
+
+    def test_line_starts_with_semicolon(self):
+        text = ";select a from b;"
+        expected = "EXEC SQL ;EXEC SQL select a from b;"
+        self.assertEqual(expected, sqlprep.prepare_sql(text))

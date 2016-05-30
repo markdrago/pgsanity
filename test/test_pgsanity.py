@@ -35,7 +35,7 @@ class TestPgSanity(unittest.TestCase):
 
         (success,msg) = pgsanity.check_string(text)
         self.assertFalse(success)
-        self.assertEqual('line 4: ERROR: syntax error at or near "spam"')
+        self.assertEqual('line 4: ERROR: syntax error at or near "spam"', msg)
 
     def test_bom_gets_stripped(self):
         bomless = "SELECT 'pining for the fjords';".encode('utf-8')

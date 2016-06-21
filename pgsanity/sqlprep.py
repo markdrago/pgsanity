@@ -80,6 +80,25 @@ def get_processing_state(current_state, current_token):
     else:
         return transitions[current_state][0]
 
+def get_token_gen(sql,tokens):
+    """ return a generator that indicates each token in turn, and the identity
+        of that token
+        return: (token's integer position in string, token)
+    """
+    positionDict = {}
+    search_position = 0
+    for token in tokens:
+        positionDict[token] = sql.find(token,search_position)
+    while positionDict.values() != []:
+        rval = sorted(positionDict.items(), key=lambda t: t[1])[0]
+        if rval==-1:
+            for key in positionDict.keys():
+                if positionDict[key] == -1:
+                    del positionDict[key]
+            continue
+        yield rval
+        search_position = rval[1] + len(rval[0])
+
 def split_sql(sql):
     """isolate complete SQL-statements from the passed-in string
        return: the SQL-statements from the passed-in string,
@@ -88,25 +107,14 @@ def split_sql(sql):
         raise ValueError("Input appears to be empty.")
     
     # first, find the locations of all potential tokens in the input
-    tokenmap = {};
     tokens = ['$$','*/','/*',';',"'",'"','--',"\n"]
-    search_position = 0
-    for token in tokens:
-        result = sql.find(token,search_position)
-        while result!=-1:
-            tokenmap[result] = token
-            result = sql.find(token,search_position)
-            search_position = result + len(token)
-        search_position = 0
-        
-    tokenmap = OrderedDict(sorted(tokenmap.items(), key=lambda t: t[0]))
 
     # move through the tokens in order, appending SQL-chunks to current string
     previous_state = '_'
     current_state = '_'
     current_sql_expression = ''
     previous_position = 0
-    for position, token in tokenmap.items():
+    for token, position in get_token_gen(sql,tokens):
         current_state = get_processing_state(current_state,token)
         # disard everything except for newlines if in line-comment state
         if current_state != '--' and previous_state != '--':

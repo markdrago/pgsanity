@@ -1,4 +1,6 @@
 import re
+from collections import OrderedDict
+
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -15,7 +17,7 @@ def prepare_sql(sql):
     results.close()
     return response
 
-def get_processing_state(current_state, current_char):
+def get_processing_state(current_state, current_token):
     """determine the current state of processing an SQL-string.
     return: state symbol.
 
@@ -25,29 +27,13 @@ def get_processing_state(current_state, current_char):
                    other operators occur. This is the initial processesing state
                    in which the machine starts off
 
-        /*p  --    block-comment pre-entry state. Identical to the "_" state
-                   except that '*' initiates entry of a block comment
-
         /*   --    block-comment state. In block-comments, no SQL actually
                    occurs, meaning special characters like quotes and semicolons
                    have no effect
 
-        /*2  --    block-comment pre-exit state. Identical to the "/*" state
-                   except that '/' causes the current block-comment to be closed
-
-        $$p  --    extended-string pre-entry state. Identical to the base state
-                   except that '$' initiates entry of an extended string
-
         $$   --    extended-string state. In extended strings, all characters
                    are interpreted as string-data, meaning SQL-commands,
                    operators, etc. have no effect
-
-        $$2  --    extended-string pre-exit state. Identical to the extended-
-                   string state except that '$' causes the current extended-
-                   string to be closed
-
-        --p  --    line-comment pre-entry state. identical to the base state,
-                   except that '-' initiates a line-comment
 
         --   --    line-comment state. All characters are ignored and not
                    treated as SQL except for '\n', which is the only character
@@ -74,28 +60,23 @@ def get_processing_state(current_state, current_char):
     """
     transitions = {
         '_': {
-            0: '_', '/' : '/*p', '-': '--p', '$': '$$p',
+            0: '_', '/*' : '/*', '--': '--', '$$': '$$',
             "'": "'", '"': '"', ';': ';'
         },
         "'": {0: "'", "'": "'2"},
-        '"': {0: '"', '"': '"2'},
-        '--p': {0: '_', '-': '--', ';': ';'},
-        '/*p': {0: '_', '*': '/*', ';': ';'},
-        '$$p': {0: '_', '$': '$$', ';': ';'},
-        '--':  {0: '--', '\n':'_'},
-        '/*': {0: '/*', '*':'/*2'},
-        '/*2': {0: '/*', '/':'_'},
-        '$$':  {0: '$$', '$': '$$2'},
-        '$$2': {0: '$$', '$': '_'},
         "'2":  {0: "_", "'": "'", ';': ';'},
-        '"2':  {0: '_', '"': '"', ';': ';'}
+        '"': {0: '"', '"': '"2'},
+        '"2':  {0: '_', '"': '"', ';': ';'},
+        '--':  {0: '--', '\n':'_'},
+        '/*': {0: '/*', '*/':'_'},
+        '$$':  {0: '$$', '$$': '_'},
     }
     # ^ Above, transitions[current_state][0] represents the transition to take
     # if no transition is explicitly defined for the passed-in character
     if current_state not in transitions:
         raise ValueError("Received an invalid state '{}'".format(current_state))
-    if current_char in transitions[current_state]:
-        return transitions[current_state][current_char]
+    if current_token in transitions[current_state]:
+        return transitions[current_state][current_token]
     else:
         return transitions[current_state][0]
 
@@ -105,24 +86,46 @@ def split_sql(sql):
        separated into individual statements """
     if len(sql) == 0:
         raise ValueError("Input appears to be empty.")
+    
+    # first, find the locations of all potential tokens in the input
+    tokenmap = {};
+    tokens = ['$$','*/','/*',';',"'",'"','--',"\n"]
+    search_position = 0
+    for token in tokens:
+        result = sql.find(token,search_position)
+        while result!=-1:
+            tokenmap[result] = token
+            result = sql.find(token,search_position)
+            search_position = result + len(token)
+        search_position = 0
+        
+    tokenmap = OrderedDict(sorted(tokenmap.items(), key=lambda t: t[0]))
+
+    # move through the tokens in order, appending SQL-chunks to current string
     previous_state = '_'
     current_state = '_'
     current_sql_expression = ''
-    for c in sql:
-        previous_state = current_state
-        current_state = get_processing_state(current_state,c)
+    previous_position = 0
+    for position, token in tokenmap.items():
+        current_state = get_processing_state(current_state,token)
         # disard everything except for newlines if in line-comment state
-        current_sql_expression += c if ( current_state != '--'
-                                         or c == "\n" ) else ''
-##        print "Current char: {} new state: {}".format(repr(c),current_state)
+        if current_state != '--' and previous_state != '--':
+            current_sql_expression += sql[previous_position:position+len(token)]
+        elif current_state == '--' and previous_state != '--':
+        # if line-comment just started, add everything before it:
+            current_sql_expression += sql[previous_position:position]
+        elif token=="\n":
+            current_sql_expression += token
+##        print "Current token: {} new state: {}".format(repr(token),current_state)
         if current_state == ';':
             yield current_sql_expression
             current_sql_expression = ''
             current_state = '_'
-        elif ( previous_state == '--p' and current_state == '--' ):
-        # if previous character was the start of a line-comment token, discard
-            current_sql_expression = current_sql_expression[:-1]
-    if current_sql_expression:
+            previous_state = '_'
+        previous_position = position + len(token)
+        previous_state = current_state
+    current_sql_expression += sql[previous_position:].rstrip(';')
+    if current_sql_expression.strip(' ;'):
     # unless only whitespace and semicolons left, return remaining characters
     # between last ; and EOF
         yield current_sql_expression + ';'

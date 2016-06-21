@@ -156,7 +156,7 @@ class TestSqlPrep(unittest.TestCase):
 
     def test_trailing_whitespace_after_semicolon(self):
         text = "select a from b; "
-        expected = "EXEC SQL select a from b;EXEC SQL  ;"
+        expected = "EXEC SQL select a from b;"
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
     def test_line_starts_with_semicolon(self):

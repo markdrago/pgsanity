@@ -103,18 +103,16 @@ def get_token_gen(sql,tokens):
         return: (token's integer position in string, token)
     """
     peek_tokens = ["'",'"']
-    positionDict = {}
+    position_dict = {}
     search_position = 0
     for token in tokens:
-        positionDict[token] = sql.find(token,search_position)    
-    while positionDict.values() != []:
-        si = sorted(positionDict.items(), key=lambda t: t[1])
-##        print "Sorted tokens: {}".format(si)
+        position_dict[token] = sql.find(token,search_position)    
+    while position_dict.values() != []:
+        si = sorted(position_dict.items(), key=lambda t: t[1])
         rval = si[0]
         find_next = rval[0]
         if rval[1]==-1:
-##            print "Deleting... {}".format(rval[0])
-            del positionDict[rval[0]]
+            del position_dict[rval[0]]
             continue
         elif rval[0] in peek_tokens and rval[1]+1 < len(sql):
             find_next = rval[0]
@@ -122,8 +120,7 @@ def get_token_gen(sql,tokens):
         yield rval
         # if possible, replace the token just returned and advance the cursor
         search_position = rval[1] + len(rval[0])
-        positionDict[find_next] = sql.find(find_next,search_position)
-##        print "Found next {} at {}".format(find_next,positionDict[find_next])
+        position_dict[find_next] = sql.find(find_next,search_position)
 
 def split_sql(sql):
     """isolate complete SQL-statements from the passed-in string
@@ -131,15 +128,7 @@ def split_sql(sql):
        separated into individual statements """
     if len(sql) == 0:
         raise ValueError("Input appears to be empty.")
-
-##    print "\nSTRING:\n"
-##    print sql
-##    print "\n:STRING"
-##    print ""
-    
-    # first, find the locations of all potential tokens in the input
     tokens = ['$$','*/','/*',';',"'",'"','--',"\n"]
-
     # move through the tokens in order, appending SQL-chunks to current string
     previous_state = '_'
     current_state = '_'
@@ -151,19 +140,12 @@ def split_sql(sql):
         if current_state != '--' and previous_state != '--':
             current_sql_expression += sql[previous_position:position+len(token)]
         elif current_state == '--' and previous_state != '--':
-        # if line-comment just started, add everything before it:
+        # if line-comment just started, add everything before it
             current_sql_expression += sql[previous_position:position]
         elif token=="\n":
             current_sql_expression += token
-##        print "Current token: {}".format(repr(token))
-##        print "New state from token: ( {} )".format(current_state)
-##        print "Current position: {}".format(position)
-##        print "String so far: {}".format(repr(current_sql_expression))
-##        print "---"
         if current_state == ';':
-##            print "YIELDING: {}".format(repr(current_sql_expression))
             yield current_sql_expression
-##            print "\n"
             current_sql_expression = ''
             current_state = '_'
             previous_state = '_'
@@ -172,5 +154,5 @@ def split_sql(sql):
     current_sql_expression += sql[previous_position:].rstrip(';')
     if current_sql_expression.strip(' ;'):
     # unless only whitespace and semicolons left, return remaining characters
-    # between last ; and EOF
+    # between last ';' and EOF
         yield current_sql_expression + ';'

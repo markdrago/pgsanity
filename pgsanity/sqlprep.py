@@ -19,6 +19,18 @@ def prepare_sql(sql):
 
 def get_processing_state(current_state, current_token):
     """determine the current state of processing an SQL-string.
+
+    current_state   --    see 'States' further down in this dcostring
+
+    current_token   --    any character or character-pair which can prompt one
+                          or more transitions in SQL-state (quote-marks,
+                          comment-starting symbols, etc.)
+                          NOTE: For both double-quote and single-quote
+                          characters, the passed-in token should consist of the
+                          initial quote character, plus the character which
+                          immediately follows it, because it is not possible
+                          to determine the next state without it.
+
     return: state symbol.
 
     States:
@@ -61,7 +73,7 @@ def get_processing_state(current_state, current_token):
     transitions = {
         '_': {
             0: '_', '/*' : '/*', '--': '--', '$$': '$$',
-            "'": "'", '"': '"', ';': ';'
+            "'": "'", '"': '"', ';': ';', "''": "'2", '""': '"2'
         },
         "'": {0: "'", "'": "'2"},
         "'2":  {0: "_", "'": "'", ';': ';'},
@@ -77,27 +89,41 @@ def get_processing_state(current_state, current_token):
         raise ValueError("Received an invalid state '{}'".format(current_state))
     if current_token in transitions[current_state]:
         return transitions[current_state][current_token]
+    elif current_token[0] in transitions[current_state]:
+    # if we have a double-quote + peek character or a single-quote + char,
+    # transition using that
+        temp_state = transitions[current_state][current_token[0]]
+        return get_processing_state(temp_state,current_token[1]) # recurse
     else:
         return transitions[current_state][0]
 
 def get_token_gen(sql,tokens):
-    """ return a generator that indicates each token in turn, and the identity
-        of that token
+    """ return a generator that indicates the position of each token in turn,
+        and the identity of that token
         return: (token's integer position in string, token)
     """
+    peek_tokens = ["'",'"']
     positionDict = {}
     search_position = 0
     for token in tokens:
-        positionDict[token] = sql.find(token,search_position)
+        positionDict[token] = sql.find(token,search_position)    
     while positionDict.values() != []:
-        rval = sorted(positionDict.items(), key=lambda t: t[1])[0]
-        if rval==-1:
-            for key in positionDict.keys():
-                if positionDict[key] == -1:
-                    del positionDict[key]
+        si = sorted(positionDict.items(), key=lambda t: t[1])
+##        print "Sorted tokens: {}".format(si)
+        rval = si[0]
+        find_next = rval[0]
+        if rval[1]==-1:
+##            print "Deleting... {}".format(rval[0])
+            del positionDict[rval[0]]
             continue
+        elif rval[0] in peek_tokens and rval[1]+1 < len(sql):
+            find_next = rval[0]
+            rval = (rval[0]+sql[rval[1]+1],rval[1])
         yield rval
+        # if possible, replace the token just returned and advance the cursor
         search_position = rval[1] + len(rval[0])
+        positionDict[find_next] = sql.find(find_next,search_position)
+##        print "Found next {} at {}".format(find_next,positionDict[find_next])
 
 def split_sql(sql):
     """isolate complete SQL-statements from the passed-in string
@@ -105,6 +131,11 @@ def split_sql(sql):
        separated into individual statements """
     if len(sql) == 0:
         raise ValueError("Input appears to be empty.")
+
+##    print "\nSTRING:\n"
+##    print sql
+##    print "\n:STRING"
+##    print ""
     
     # first, find the locations of all potential tokens in the input
     tokens = ['$$','*/','/*',';',"'",'"','--',"\n"]
@@ -124,9 +155,15 @@ def split_sql(sql):
             current_sql_expression += sql[previous_position:position]
         elif token=="\n":
             current_sql_expression += token
-##        print "Current token: {} new state: {}".format(repr(token),current_state)
+##        print "Current token: {}".format(repr(token))
+##        print "New state from token: ( {} )".format(current_state)
+##        print "Current position: {}".format(position)
+##        print "String so far: {}".format(repr(current_sql_expression))
+##        print "---"
         if current_state == ';':
+##            print "YIELDING: {}".format(repr(current_sql_expression))
             yield current_sql_expression
+##            print "\n"
             current_sql_expression = ''
             current_state = '_'
             previous_state = '_'

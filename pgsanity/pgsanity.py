@@ -17,7 +17,7 @@ def get_config(argv=sys.argv[1:]):
 
 def remove_bom_if_exists(sql_string):
     """ Take the entire SQL-payload of a file (or stream) and strip the BOM-table
-    if one was detected.
+    if one was detected, returning it along with the detected encoding.
 
     sql_string   --   string-representation of incoming character-data. Value
                       should be passed RAW, meaning BEFORE regular decoding take
@@ -25,11 +25,11 @@ def remove_bom_if_exists(sql_string):
 
     Returns a BOM-free SQL-payload.
     """
-    encoding = detect(sql_string)["encoding"]
+    encoding = detect(sql_string[:10000])["encoding"] # HACK
     is_utf8 = encoding in ["UTF-8","UTF-8-SIG"] # *
     bom_present = is_utf8 and sql_string.startswith(BOM_UTF8) # *
     sql_string = sql_string[len(BOM_UTF8):] if bom_present else sql_string
-    return sql_string 
+    return sql_string, encoding
     # * The marked lines above are a tiny bit redundant given that 'UTF-8-SIG'
     # simply means "UTF-8 file with a BOM-table". However, older versions of
     # chardet don't support this, and will just detect 'UTF-8', leaving us to
@@ -50,9 +50,8 @@ def check_file(filename=None, show_filename=False):
     else:
         with sys.stdin as filelike:
             sql_string = sys.stdin.read()
-    sql_string = remove_bom_if_exists(sql_string)
-    success, msg = check_string(sql_string.decode("utf-8"))
-    # ^ The above call to decode() is safe for both ASCII and UTF-8 data.
+    sql_string, encoding = remove_bom_if_exists(sql_string)
+    success, msg = check_string(sql_string.decode(encoding))
 
     # report results
     result = 0

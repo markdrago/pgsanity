@@ -110,6 +110,31 @@ class TestSqlPrep(unittest.TestCase):
         expected = "EXEC SQL select a from b;EXEC SQL  select a\nfrom b;"
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
+    def test_no_append_semi(self):
+        text = "select a from b"
+        expected = 'EXEC SQL ' + text
+        self.assertEqual(expected, sqlprep.prepare_sql(text))
+
+    def test_append_semi(self):
+        text = "select a from b"
+        expected = 'EXEC SQL ' + text + ';'
+        self.assertEqual(expected, sqlprep.prepare_sql(text, add_semicolon=True))
+
+    def test_append_semi_once(self):
+        text = "select a from b;"
+        expected = 'EXEC SQL ' + text
+        self.assertEqual(expected, sqlprep.prepare_sql(text, add_semicolon=True))
+
+    def test_append_semi_line_comment(self):
+        text = "select a from b\n-- looks done!"
+        expected = 'EXEC SQL ' + text + "\n;"
+        self.assertEqual(expected, sqlprep.prepare_sql(text, add_semicolon=True))
+
+    def test_append_semi_line_comment(self):
+        text = "select a from b\n/* looks done!\n*"
+        expected = 'EXEC SQL ' + text
+        self.assertEqual(expected, sqlprep.prepare_sql(text, add_semicolon=True))
+
     def test_comment_start_found_within_comment_within_statement(self):
         text = "select a from b --comment in comment --here\nwhere c=1;"
         expected = "EXEC SQL select a from b --comment in comment --here\nwhere c=1;"

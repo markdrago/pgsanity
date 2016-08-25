@@ -10,10 +10,11 @@ from pgsanity import ecpg
 
 def get_config(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(description='Check syntax of SQL for PostgreSQL')
+    parser.add_argument('--add-semicolon', action='store_true')
     parser.add_argument('files', nargs='*', default=None)
     return parser.parse_args(argv)
 
-def check_file(filename=None, show_filename=False):
+def check_file(filename=None, show_filename=False, add_semicolon=False):
     """
     Check whether an input file is valid PostgreSQL. If no filename is
     passed, STDIN is checked.
@@ -28,7 +29,7 @@ def check_file(filename=None, show_filename=False):
         with sys.stdin as filelike:
             sql_string = sys.stdin.read()
 
-    success, msg = check_string(sql_string)
+    success, msg = check_string(sql_string, add_semicolon=add_semicolon)
 
     # report results
     result = 0
@@ -42,32 +43,32 @@ def check_file(filename=None, show_filename=False):
 
     return result
 
-def check_string(sql_string):
+def check_string(sql_string, add_semicolon=False):
     """
     Check whether a string is valid PostgreSQL. Returns a boolean
     indicating validity and a message from ecpg, which will be an
     empty string if the input was valid, or a description of the
     problem otherwise.
     """
-    prepped_sql = sqlprep.prepare_sql(sql_string)
+    prepped_sql = sqlprep.prepare_sql(sql_string, add_semicolon=add_semicolon)
     success, msg = ecpg.check_syntax(prepped_sql)
     return success, msg
 
-def check_files(files):
+def check_files(files, add_semicolon=False):
     if files is None or len(files) == 0:
-        return check_file()
+        return check_file(add_semicolon=add_semicolon)
     else:
         # show filenames if > 1 file was passed as a parameter
         show_filenames = (len(files) > 1)
 
         accumulator = 0
         for filename in files:
-            accumulator |= check_file(filename, show_filenames)
+            accumulator |= check_file(filename, show_filenames, add_semicolon=add_semicolon)
         return accumulator
 
 def main():
     config = get_config()
-    return check_files(config.files)
+    return check_files(config.files, add_semicolon=add_semicolon)
 
 if __name__ == '__main__':
     try:

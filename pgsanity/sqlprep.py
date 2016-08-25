@@ -4,7 +4,7 @@ try:
 except ImportError:
     from io import StringIO
 
-def prepare_sql(sql):
+def prepare_sql(sql, add_semicolon=False):
     results = StringIO()
 
     in_statement = False
@@ -44,6 +44,10 @@ def prepare_sql(sql):
 
     response = results.getvalue()
     results.close()
+    if add_semicolon and in_statement and not in_block_comment:
+        if in_line_comment:
+            response = response + "\n"
+        response = response + ';'
     return response
 
 def split_sql(sql):

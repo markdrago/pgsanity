@@ -1,6 +1,7 @@
 import unittest
 import tempfile
 import os
+from codecs import BOM_UTF8
 
 from pgsanity import pgsanity
 
@@ -25,6 +26,25 @@ class TestPgSanity(unittest.TestCase):
         (success, msg) = pgsanity.check_string(text)
         self.assertFalse(success)
         self.assertEqual('line 1: ERROR: unrecognized data type name "garbage"', msg)
+
+    def test_check_invalid_string_2(self):
+        text = "SELECT '\n"
+        text += "-- this is not really a comment' AS c;\n"
+        text += "SELECT '\n"
+        text += "-- neither is this' AS c spam;"
+
+        (success,msg) = pgsanity.check_string(text)
+        self.assertFalse(success)
+        self.assertEqual('line 4: ERROR: syntax error at or near "spam"', msg)
+
+    def test_bom_gets_stripped(self):
+        bomless = "SELECT 'pining for the fjords';".encode('utf-8')
+        bomful = BOM_UTF8 + bomless
+        self.assertEqual(pgsanity.remove_bom_if_exists(bomful), bomless)
+
+    def test_bom_removal_idempotence(self):
+        bomless = "SELET current_setting('parrot.status);".encode('utf-8')
+        self.assertEqual(bomless, pgsanity.remove_bom_if_exists(bomless))
 
 
 class TestPgSanityFiles(unittest.TestCase):

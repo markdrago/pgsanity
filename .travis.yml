@@ -1,0 +1,11 @@
+language: python
+python:
+  - "2.6"
+  - "2.7"
+  - "3.5"
+sudo: false
+addons:
+  apt:
+    packages:
+    - postgresql-9.5
+script: python setup.py test

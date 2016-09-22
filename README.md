@@ -13,6 +13,8 @@ list of bare SQL in it, make that file look like a C file with
 embedded SQL, run it through ecpg and let ecpg report on the syntax
 errors of the SQL.
 
+[![Build Status](https://travis-ci.org/markdrago/pgsanity.svg?branch=master)](https://travis-ci.org/markdrago/pgsanity)
+
 ##Installation
 ###Dependencies
 - Python >= 2.7

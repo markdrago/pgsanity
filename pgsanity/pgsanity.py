@@ -68,7 +68,8 @@ def check_files(files, add_semicolon=False):
 
 def main():
     config = get_config()
-    return check_files(config.files, add_semicolon=add_semicolon)
+    # return check_files(config.files, add_semicolon=add_semicolon)
+    return check_files(config.files)
 
 if __name__ == '__main__':
     try:

@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='pgsanity',
-    version='0.2.8',
+    version='0.2.9',
     author='Mark Drago',
     author_email='markdrago@gmail.com',
     url='http://github.com/markdrago/pgsanity',

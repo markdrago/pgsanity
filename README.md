@@ -1,4 +1,4 @@
-##PgSanity
+## PgSanity
 
 PgSanity checks the syntax of Postgresql SQL files.
 
@@ -15,8 +15,8 @@ errors of the SQL.
 
 [![Build Status](https://travis-ci.org/markdrago/pgsanity.svg?branch=master)](https://travis-ci.org/markdrago/pgsanity)
 
-##Installation
-###Dependencies
+## Installation
+### Dependencies
 - Python >= 2.7
     - May work with Python 2.6 if you install argparse (sudo pip install argparse)
     - If you need support for Python < 2.6 let me know
@@ -25,12 +25,12 @@ errors of the SQL.
     - rhel/centos: sudo yum install postgresql-devel
     - arch: sudo pacman -S postgresql-libs
 
-###Getting PgSanity
+### Getting PgSanity
 PgSanity is available in the Python Package Index, so you can install it with either easy_install or pip.  Here's [PgSanity's page on PyPI](http://pypi.python.org/pypi/pgsanity).
 - sudo pip install pgsanity **or** sudo easy_install pgsanity
     - If you don't have pip you can get it on ubuntu/debian by running: sudo apt-get install python-pip
 
-##Usage
+## Usage
 PgSanity accepts filenames as parameters and it will report SQL syntax errors which exist in those files.  PgSanity will exit with a status code of 0 if the syntax of the SQL looks good and a 1 if any errors were found.
  
     $ pgsanity file_with_sql.sql
@@ -59,7 +59,7 @@ Additionally PgSanity will read SQL from stdin if it is not given any parameters
     $ echo $?
     0
 
-##Interpreting The Results
+## Interpreting The Results
 The error messages pretty much come directly from ecpg.  Something I have noticed while using pgsanity is that an error message on line X is probably more indicative of the statement right above X.  For example:
 
     $ echo "select a from b\ninsert into mytable values (1, 2, 3);" | pgsanity
@@ -74,5 +74,5 @@ Another common error message that can be a little weird to interpret is illustra
 
 The 'at or near ""' bit is trying to say that we got to the end of the file and no semicolon was found.
 
-##Reporting Problems
+## Reporting Problems
 If you encounter any problems with PgSanity, especially any issues where it incorrectly states that invalid SQL is valid or vice versa, please report the issue on [PgSanity's github page](http://github.com/markdrago/pgsanity).  Thanks!

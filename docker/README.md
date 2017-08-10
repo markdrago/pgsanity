@@ -13,5 +13,4 @@ This is a simple example of checking files in the current directory:
 docker run --rm -it -v $PWD:/host -w /host pgsanity file1.sql file2.sql
 ```
 
-More information on its
-[Github repository](https://github.com/markdrago/pgsanity).
+More information on its [Github repository](https://github.com/markdrago/pgsanity).

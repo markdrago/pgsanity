@@ -3,7 +3,7 @@
 PgSanity checks the syntax of Postgresql SQL files.
 
 It does this by leveraging the ecpg command which is traditionally
-used for preparing C files with embedded sql for compilation.
+used for preparing C files with embedded SQL for compilation.
 However, as part of that preparation, ecpg checks the embedded SQL
 statements for syntax errors using the exact same parser that is
 in PostgreSQL.
@@ -18,17 +18,22 @@ errors of the SQL.
 ## Installation
 ### Dependencies
 - Python >= 2.7
-    - May work with Python 2.6 if you install argparse (sudo pip install argparse)
+    - May work with Python 2.6 if you install argparse (`sudo pip install argparse`)
     - If you need support for Python < 2.6 let me know
 - ecpg
-    - ubuntu/debian: sudo apt-get install libecpg-dev
-    - rhel/centos: sudo yum install postgresql-devel
-    - arch: sudo pacman -S postgresql-libs
+    - Ubuntu/Debian: `sudo apt-get install libecpg-dev`
+    - RHEL/CentOS: `sudo yum install postgresql-devel`
+    - Arch: `sudo pacman -S postgresql-libs`
 
 ### Getting PgSanity
 PgSanity is available in the Python Package Index, so you can install it with either easy_install or pip.  Here's [PgSanity's page on PyPI](http://pypi.python.org/pypi/pgsanity).
-- sudo pip install pgsanity **or** sudo easy_install pgsanity
-    - If you don't have pip you can get it on ubuntu/debian by running: sudo apt-get install python-pip
+- `sudo pip install pgsanity` or `sudo easy_install pgsanity`
+    - If you don't have pip you can get it on Ubuntu/Debian by running: `sudo apt-get install python-pip`
+
+It is also available in the [FreeBSD ports](https://www.freebsd.org/ports/index.html) as [`databases/pgsanity`](https://www.freshports.org/databases/pgsanity/). You can install it with one of those commands:
+- `pkg install py36-pgsanity`
+- `pkg install py27-pgsanity` 
+- `cd /usr/ports/databases/pgsanity && make install clean`
 
 ## Usage
 PgSanity accepts filenames as parameters and it will report SQL syntax errors which exist in those files.  PgSanity will exit with a status code of 0 if the syntax of the SQL looks good and a 1 if any errors were found.

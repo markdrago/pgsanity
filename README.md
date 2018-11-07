@@ -18,7 +18,7 @@ errors of the SQL.
 ## Installation
 ### Dependencies
 - Python >= 2.7
-    - May work with Python 2.6 if you install argparse (`sudo pip install argparse`)
+    - May work with Python 2.6 if you install argparse (`pip install argparse`)
     - If you need support for Python < 2.6 let me know
 - ecpg
     - Ubuntu/Debian: `sudo apt-get install libecpg-dev`
@@ -27,7 +27,7 @@ errors of the SQL.
 
 ### Getting PgSanity
 PgSanity is available in the Python Package Index, so you can install it with either easy_install or pip.  Here's [PgSanity's page on PyPI](http://pypi.python.org/pypi/pgsanity).
-- `sudo pip install pgsanity` or `sudo easy_install pgsanity`
+- `pip install pgsanity` or `sudo easy_install pgsanity`
     - If you don't have pip you can get it on Ubuntu/Debian by running: `sudo apt-get install python-pip`
 
 It is also available in the [FreeBSD ports](https://www.freebsd.org/ports/index.html) as [`databases/pgsanity`](https://www.freshports.org/databases/pgsanity/). You can install it with one of those commands:

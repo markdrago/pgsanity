@@ -1,0 +1,9 @@
+# For use with pre-commit.
+# See usage instructions at http://pre-commit.com
+
+- id: pgsanity_lint
+  name: pgsanity lint
+  description: This hook runs pgsanity-lint for linting postgresql SQL files
+  entry: pgsanity
+  types: [file, sql]
+  language: python

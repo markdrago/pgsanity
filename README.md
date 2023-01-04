@@ -79,5 +79,18 @@ Another common error message that can be a little weird to interpret is illustra
 
 The 'at or near ""' bit is trying to say that we got to the end of the file and no semicolon was found.
 
+## pre-commit
+
+This repository is a [pre-commit](<https://pre-commit.com>) hook.
+
+Usage:
+
+```
+  - repo: https://github.com/markdrago/pgsanity
+    rev: v0.2.9
+    hooks:
+      - id: pgsanity_lint
+```
+
 ## Reporting Problems
 If you encounter any problems with PgSanity, especially any issues where it incorrectly states that invalid SQL is valid or vice versa, please report the issue on [PgSanity's github page](http://github.com/markdrago/pgsanity).  Thanks!

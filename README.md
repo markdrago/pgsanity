@@ -87,7 +87,7 @@ Usage:
 
 ```
   - repo: https://github.com/markdrago/pgsanity
-    rev: v0.2.9
+    rev: 5fb3ce7
     hooks:
       - id: pgsanity_lint
 ```

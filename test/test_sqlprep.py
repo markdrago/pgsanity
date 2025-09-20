@@ -2,6 +2,7 @@ import unittest
 
 from pgsanity import sqlprep
 
+
 class TestSqlPrep(unittest.TestCase):
     def test_split_sql_nothing_interesting(self):
         text = "abcd123"
@@ -10,7 +11,7 @@ class TestSqlPrep(unittest.TestCase):
 
     def test_split_sql_trailing_semicolon(self):
         text = "abcd123;"
-        expected = [(None, ";", "abcd123"), (";", None, '')]
+        expected = [(None, ";", "abcd123"), (";", None, "")]
         self.assertEqual(expected, list(sqlprep.split_sql(text)))
 
     def test_split_sql_comment_between_statements(self):
@@ -18,23 +19,27 @@ class TestSqlPrep(unittest.TestCase):
         text += "--comment here\n"
         text += "select a from b;"
 
-        expected = [(None, ";", "select a from b"),
-                    (";", "\n", ''),
-                    ("\n", "--", ''),
-                    ("--", "\n", 'comment here'),
-                    ("\n", ";", 'select a from b'),
-                    (";", None, '')]
+        expected = [
+            (None, ";", "select a from b"),
+            (";", "\n", ""),
+            ("\n", "--", ""),
+            ("--", "\n", "comment here"),
+            ("\n", ";", "select a from b"),
+            (";", None, ""),
+        ]
         self.assertEqual(expected, list(sqlprep.split_sql(text)))
 
     def test_split_sql_inline_comment(self):
         text = "select a from b; --comment here\n"
         text += "select a from b;"
 
-        expected = [(None, ";", "select a from b"),
-                    (";", "--", ' '),
-                    ("--", "\n", 'comment here'),
-                    ("\n", ";", 'select a from b'),
-                    (";", None, '')]
+        expected = [
+            (None, ";", "select a from b"),
+            (";", "--", " "),
+            ("--", "\n", "comment here"),
+            ("\n", ";", "select a from b"),
+            (";", None, ""),
+        ]
         self.assertEqual(expected, list(sqlprep.split_sql(text)))
 
     def test_handles_first_column_comment_between_statements(self):
@@ -112,27 +117,27 @@ class TestSqlPrep(unittest.TestCase):
 
     def test_no_append_semi(self):
         text = "select a from b"
-        expected = 'EXEC SQL ' + text
+        expected = "EXEC SQL " + text
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
     def test_append_semi(self):
         text = "select a from b"
-        expected = 'EXEC SQL ' + text + ';'
+        expected = "EXEC SQL " + text + ";"
         self.assertEqual(expected, sqlprep.prepare_sql(text, add_semicolon=True))
 
     def test_append_semi_once(self):
         text = "select a from b;"
-        expected = 'EXEC SQL ' + text
+        expected = "EXEC SQL " + text
         self.assertEqual(expected, sqlprep.prepare_sql(text, add_semicolon=True))
 
-    def test_append_semi_line_comment(self):
+    def test_append_semi_line_comment_dashes(self):
         text = "select a from b\n-- looks done!"
-        expected = 'EXEC SQL ' + text + "\n;"
+        expected = "EXEC SQL " + text + "\n;"
         self.assertEqual(expected, sqlprep.prepare_sql(text, add_semicolon=True))
 
-    def test_append_semi_line_comment(self):
+    def test_append_semi_line_comment_block(self):
         text = "select a from b\n/* looks done!\n*"
-        expected = 'EXEC SQL ' + text
+        expected = "EXEC SQL " + text
         self.assertEqual(expected, sqlprep.prepare_sql(text, add_semicolon=True))
 
     def test_comment_start_found_within_comment_within_statement(self):
@@ -177,8 +182,11 @@ class TestSqlPrep(unittest.TestCase):
 
     def test_opening_two_block_comments_only_requries_one_close(self):
         text = "select a\n/*\n/*\ncomment\n*/from b;select c from d;"
-        expected = "EXEC SQL select a\n/*\n/*\ncomment\n*/from b;EXEC SQL select c from d;"
+        expected = (
+            "EXEC SQL select a\n/*\n/*\ncomment\n*/from b;EXEC SQL select c from d;"
+        )
         self.assertEqual(expected, sqlprep.prepare_sql(text))
+
 
 #  TODO:
 #  semicolon followed by only whitespace / comments

@@ -13,22 +13,19 @@ list of bare SQL in it, make that file look like a C file with
 embedded SQL, run it through ecpg and let ecpg report on the syntax
 errors of the SQL.
 
-[![Build Status](https://travis-ci.org/markdrago/pgsanity.svg?branch=master)](https://travis-ci.org/markdrago/pgsanity)
-
 ## Installation
 ### Dependencies
-- Python >= 2.7
-    - May work with Python 2.6 if you install argparse (`sudo pip install argparse`)
-    - If you need support for Python < 2.6 let me know
+- Python >= 3.9
+    - May also work with older Pythons >= 3
 - ecpg
     - Ubuntu/Debian: `sudo apt-get install libecpg-dev`
     - RHEL/CentOS: `sudo yum install postgresql-devel`
     - Arch: `sudo pacman -S postgresql-libs`
 
 ### Getting PgSanity
-PgSanity is available in the Python Package Index, so you can install it with either easy_install or pip.  Here's [PgSanity's page on PyPI](http://pypi.python.org/pypi/pgsanity).
-- `sudo pip install pgsanity` or `sudo easy_install pgsanity`
-    - If you don't have pip you can get it on Ubuntu/Debian by running: `sudo apt-get install python-pip`
+PgSanity is available in the Python Package Index, so you can install it with pip or uv.  Here's [PgSanity's page on PyPI](http://pypi.python.org/pypi/pgsanity).
+- `pip install pgsanity` or `uv pip install pgsanity`
+    - If you don't have pip you can get it on Ubuntu/Debian by running: `sudo apt install python3-pip`
 
 It is also available in the [FreeBSD ports](https://www.freebsd.org/ports/index.html) as [`databases/pgsanity`](https://www.freshports.org/databases/pgsanity/). You can install it with one of those commands:
 - `pkg install py36-pgsanity`
@@ -87,7 +84,7 @@ Usage:
 
 ```
   - repo: https://github.com/markdrago/pgsanity
-    rev: v0.2.9
+    rev: v0.3.0
     hooks:
       - id: pgsanity_lint
 ```

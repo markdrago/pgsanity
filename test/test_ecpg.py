@@ -2,14 +2,15 @@ import unittest
 
 from pgsanity import ecpg
 
+
 class TestEcpg(unittest.TestCase):
     def test_simple_success(self):
-        text = u"EXEC SQL select a from b;"
+        text = "EXEC SQL select a from b;"
         (success, msg) = ecpg.check_syntax(text)
         self.assertTrue(success)
 
     def test_simple_failure(self):
-        text = u"EXEC SQL garbage select a from b;"
+        text = "EXEC SQL garbage select a from b;"
         (success, msg) = ecpg.check_syntax(text)
         self.assertFalse(success)
         self.assertEqual('line 1: ERROR: unrecognized data type name "garbage"', msg)

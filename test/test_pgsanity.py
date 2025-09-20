@@ -1,8 +1,9 @@
-import unittest
-import tempfile
 import os
+import tempfile
+import unittest
 
 from pgsanity import pgsanity
+
 
 class TestPgSanity(unittest.TestCase):
     def test_args_parsed_one_filename(self):
@@ -45,19 +46,19 @@ class TestPgSanityFiles(unittest.TestCase):
 
     def test_check_valid_file(self):
         text = "select a from b;"
-        write_out(self.file, text.encode('utf-8'))
+        write_out(self.file, text.encode("utf-8"))
         status_code = pgsanity.check_file(self.file.name)
         self.assertEqual(status_code, 0)
 
     def test_check_invalid_file(self):
         text = "garbage select a from b;"
-        write_out(self.file, text.encode('utf-8'))
+        write_out(self.file, text.encode("utf-8"))
         status_code = pgsanity.check_file(self.file.name)
         self.assertNotEqual(status_code, 0)
 
     def _write_missing_semi(self):
         text = "select a from b"
-        write_out(self.file, text.encode('utf-8'))
+        write_out(self.file, text.encode("utf-8"))
 
     def test_check_missing_semi(self):
         self._write_missing_semi()

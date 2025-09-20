@@ -29,7 +29,6 @@ PgSanity is available in the Python Package Index, so you can install it with pi
 
 It is also available in the [FreeBSD ports](https://www.freebsd.org/ports/index.html) as [`databases/pgsanity`](https://www.freshports.org/databases/pgsanity/). You can install it with one of those commands:
 - `pkg install py36-pgsanity`
-- `pkg install py27-pgsanity` 
 - `cd /usr/ports/databases/pgsanity && make install clean`
 
 ## Usage
